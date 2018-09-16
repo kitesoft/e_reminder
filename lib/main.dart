@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:intl/intl.dart';
 
 void main() => runApp(new MyApp());
 
@@ -7,7 +9,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'eReminderMD',
+      title: 'eReminder',
       theme: new ThemeData(
         // This is the theme of your application.
         //
@@ -19,7 +21,7 @@ class MyApp extends StatelessWidget {
         // counter didn't reset back to zero; the application is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: new MyHomePage(title: "eReminderMD"),
+      home: new MyHomePage(title: "eReminder"),
     );
   }
 }
@@ -71,6 +73,36 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
 
+  final TextEditingController _controller = new TextEditingController();
+
+  Future _chooseDate(BuildContext context, String initialDateString) async {
+    var now = new DateTime.now();
+    var initialDate = convertToDate(initialDateString) ?? now;
+    initialDate = (initialDate.year >= 1900 && initialDate.isBefore(now) ? initialDate : now);
+
+    var result = await showDatePicker(
+        context: context,
+        initialDate: initialDate,
+        firstDate: new DateTime(1900),
+        lastDate: new DateTime(DateTime.now().year.toInt() + 1));
+
+    if (result == null) return;
+
+    setState(() {
+      _controller.text = new DateFormat.yMd().format(result);
+    });
+  }
+
+  DateTime convertToDate(String input) {
+    try
+    {
+      var d = new DateFormat.yMd().parseStrict(input);
+      return d;
+    } catch (e) {
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -108,28 +140,38 @@ class _MyHomePageState extends State<MyHomePage> {
           //mainAxisAlignment: MainAxisAlignment.center,
 
           children: <Widget>[
-            new Text(
-              'San Rafael Community Medical Clinic\n\n',
-              textScaleFactor: 1.3,
+                new Text(
+                'San Rafael Community Medical Clinic\n\n',
+                textScaleFactor: 1.5,
+                ),
+
+            new TextFormField(
+              key: null,
+              controller: _controller,
             ),
-            new Text(
-            '$_counter',
-              style: Theme.of(context).textTheme.display1,
-              textAlign: TextAlign.center,
+
+            new FlatButton(
+                onPressed: (() {
+                  _chooseDate(context, _controller.text);
+                }),
+                color: Colors.blue,
+                textColor: Colors.white,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: new Text(
+                  "Choose Date",
+                  ),
+                ),
             ),
-            new SizedBox(
-                height: 30.0,
-                width: 30.0,
-                child: new IconButton(
-                  padding: new EdgeInsets.all(0.0),
-                  icon: new Icon(Icons.restore, size: 18.0),
-                  onPressed: _resetCounter,
-                )
-            )
           ],
         ),
       ),
-      
+
+      floatingActionButton: FloatingActionButton(
+          onPressed: _incrementCounter,
+          child: new Icon(Icons.add),
+      ),
+
       bottomNavigationBar: BottomNavigationBar (
           onTap: onTabTapped,
           items: [
